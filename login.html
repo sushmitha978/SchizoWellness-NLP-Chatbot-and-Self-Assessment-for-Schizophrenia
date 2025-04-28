@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="login.css">
+</head>
+<body>
+    <div class="center">
+        <h1 id="formTitle">Login</h1>
+        <form id="loginForm" onsubmit="return validateLogin(event)">
+            <div class="txt_field">
+                <input type="text" id="loginUsername" required>
+                <span></span>
+                <label>Username</label>
+            </div>
+            <div class="txt_field">
+                <input type="password" id="loginPassword" required>
+                <span></span>
+                <label>Password</label>
+            </div>
+            <div class="pass">Forgot Password?</div>
+            <input type="submit" value="Login">
+            <div class="signup_link">
+                Not a member? <a href="#" onclick="toggleForm()">Signup</a>
+            </div>
+        </form>
+
+        <form id="signupForm" onsubmit="return validateSignup(event)" style="display: none;">
+            <div class="txt_field">
+                <input type="text" id="signupUsername" required>
+                <span></span>
+                <label>Username</label>
+            </div>
+            <div class="txt_field">
+                <input type="password" id="signupPassword" required>
+                <span></span>
+                <label>Password</label>
+            </div>
+            <div class="txt_field">
+                <input type="password" id="confirmPassword" required>
+                <span></span>
+                <label>Confirm Password</label>
+            </div>
+            <input type="submit" value="Signup">
+            <div class="signup_link">
+                Already a member? <a href="#" onclick="toggleForm()">Login</a>
+            </div>
+        </form>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

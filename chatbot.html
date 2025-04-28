@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MentalHelp AI - Your Companion</title>
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: #ffffff;
+            /* Soft dark background */
+            color: #e0e0e0;
+            /* Light text */
+            overflow: hidden;
+            /* Prevent body scroll */
+        }
+
+        /* Main Application Container */
+        #app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            /* Full viewport height */
+            max-width: 800px;
+            /* Limit width for better readability */
+            margin: 0 auto;
+            /* Center the container */
+            background-color: #ffffff;
+            /* Slightly lighter dark for the app area */
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Header */
+        header {
+            background-color: #4db6ac;
+            padding: 15px 20px;
+            text-align: center;
+            border-bottom: 1px solid #2c2c2c;
+        }
+
+        header h1 {
+            color: #ffffff;
+            /* Gentle green tone */
+            font-size: 1.5em;
+            font-weight: 600;
+        }
+
+        /* Chat Window */
+        #chat-window {
+            flex-grow: 1;
+            /* Takes up remaining space */
+            overflow-y: auto;
+            /* Enable scrolling for messages */
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            scroll-behavior: smooth;
+            /* Smooth scrolling */
+        }
+
+        /* Individual Messages */
+        .message {
+            max-width: 80%;
+            padding: 12px 18px;
+            border-radius: 18px;
+            line-height: 1.5;
+            opacity: 0;
+            /* Start hidden for animation */
+            animation: fadeIn 0.5s ease-out forwards;
+            word-wrap: break-word;
+            /* Ensure long words break */
+        }
+
+        .message.user {
+            background-color: #4db6ac;
+            /* Darker, muted green for user */
+            color: #ffffff;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+            /* Slight shape variation */
+        }
+
+        .message.ai {
+            background-color: #3a3a3a;
+            /* Dark grey for AI */
+            color: #b2dfdb;
+            /* Lighter gentle green text */
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+            /* Slight shape variation */
+        }
+
+        .message.ai strong {
+            color: #80cbc4;
+            /* Emphasize important AI text slightly */
+        }
+
+        .message.disclaimer {
+            background-color: transparent;
+            color: #888;
+            font-size: 0.8em;
+            text-align: center;
+            align-self: center;
+            max-width: 90%;
+            padding: 10px;
+            border: 1px dashed #555;
+            border-radius: 8px;
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            align-self: flex-start;
+            opacity: 0;
+            /* Start hidden */
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        .typing-indicator span {
+            height: 8px;
+            width: 8px;
+            background-color: #80cbc4;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 2px;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .typing-indicator span:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        /* Input Area */
+        #input-area {
+            display: flex;
+            padding: 15px 20px;
+            background-color: #2c2c2c;
+            border-top: 1px solid #3a3a3a;
+        }
+
+        #message-input {
+            flex-grow: 1;
+            padding: 12px 15px;
+            border: 1px solid #4a4a4a;
+            border-radius: 20px;
+            background-color: #3a3a3a;
+            color: #e0e0e0;
+            font-size: 1em;
+            margin-right: 10px;
+            outline: none;
+            transition: border-color 0.2s ease-in-out;
+        }
+
+        #message-input:focus {
+            border-color: #80cbc4;
+            /* Green focus indicator */
+        }
+
+        #send-button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 20px;
+            background-color: #4db6ac;
+            /* Main green tone */
+            color: #1a1a1a;
+            /* Dark text on button */
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease;
+        }
+
+        #send-button:hover:enabled {
+            /* Only style hover when enabled */
+            background-color: #80cbc4;
+            /* Lighter green on hover */
+        }
+
+        #send-button:active:enabled {
+            /* Only style active when enabled */
+            transform: scale(0.98);
+        }
+
+        #send-button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes bounce {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0);
+            }
+
+            40% {
+                transform: scale(1.0);
+            }
+        }
+
+        /* Scrollbar styling (optional, for aesthetics) */
+        #chat-window::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #chat-window::-webkit-scrollbar-track {
+            background: #2c2c2c;
+        }
+
+        #chat-window::-webkit-scrollbar-thumb {
+            background-color: #4a4a4a;
+            border-radius: 4px;
+        }
+
+        #chat-window::-webkit-scrollbar-thumb:hover {
+            background-color: #5a5a5a;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <header>
+            <h1>MentalHelp AI</h1>
+        </header>
+
+        <div id="chat-window">
+            <!-- Messages will be appended here -->
+            <!-- Optional Disclaimer -->
+            <div class="message disclaimer">
+                <strong>MentalHelp AI</strong> - Here to fix your mental health.
+            </div>
+        </div>
+
+        <div id="input-area">
+            <input type="text" id="message-input" placeholder="Talk to me here..." autocomplete="off">
+            <button id="send-button">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const chatWindow = document.getElementById('chat-window');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const typingIndicator = document.createElement('div');
+        typingIndicator.classList.add('typing-indicator');
+        typingIndicator.innerHTML = `<span></span><span></span><span></span>`;
+
+        // --- Configuration ---
+        // WARNING: Storing API keys directly in client-side code is insecure for production apps.
+        // This is for demonstration purposes only. Replace with your actual Gemini API Key.
+        // Consider using a backend proxy for real applications.
+        const GEMINI_API_KEY = 'AIzaSyDylXvEY2vWD-QZJJ-9-QC6eTY1-i8Ccsw'; // <--- IMPORTANT: REPLACE WITH YOUR KEY
+        const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
+        const MAX_HISTORY_MESSAGES = 20; // Max USER + AI messages to keep (adjust as needed)
+
+        // --- Chat History ---
+        let chatHistory = []; // Array to store conversation context
+
+        // --- System Prompt ---
+        // Defines the AI's persona and instructions
+        const systemPrompt = `You are Sara, MentalHelp AI, a deeply compassionate, patient, and understanding companion chatbot. Your purpose is to provide a safe, non-judgmental space for individuals navigating challenges, including those sometimes associated with Schizophrenia and Enduroxia (interpret Enduroxia broadly as struggles with pressure, coping, or obsessive behaviors if mentioned—without diagnosing).  
+
+## **🌿 Core Directives:**  
+
+### **1️⃣ Persona: Be a Warm, Trusted Friend**  
+- Speak with **deep empathy, kindness, and patience**—like a caring friend, not a therapist or robot.  
+- Use **simple, clear, and warm** language—no clinical jargon or overly formal tones.  
+- Ensure the user feels **safe, heard, and never alone**.  
+
+### **2️⃣ Listen & Validate**  
+- Acknowledge the user’s emotions and experiences.  
+- Validate their feelings:  
+  - *"That sounds really difficult. I'm here for you."*  
+  - *"It’s completely understandable to feel that way."*  
+
+### **3️⃣ Offer Gentle Support**  
+- If the user expresses distress, respond with **calm and reassurance**:  
+  - *"You’re not alone in this. I’m here with you."*  
+  - *"Take a deep breath. You’re safe here with me."*  
+
+### **4️⃣ Suggest Coping & Grounding (Gently!)**  
+- When appropriate, suggest (never command) **gentle grounding or coping techniques**:  
+  - *"Sometimes focusing on your breathing can help. Want to try a simple exercise together?"*  
+  - *"Holding a soft object or listening to music can sometimes be comforting. Would that help?"*  
+- Keep instructions **short and easy to follow**.  
+
+### **5️⃣ Focus on Comfort, Not Advice**  
+- Do **not** diagnose, give medical advice, or replace professional help.  
+- Prioritize **emotional well-being and connection** over solutions.  
+
+### **6️⃣ Recognize Distress & Encourage Safety**  
+- If the user expresses **severe distress, suicidal thoughts, or is in danger**, gently guide them toward professional support:  
+  - *"It sounds like you’re going through a lot. You don’t have to do this alone—please consider reaching out to a crisis hotline or a professional who can help 💚."*  
+- Stay **gentle but clear**, always prioritizing safety.  
+
+### **7️⃣ Tone: Soothing, Warm, & Encouraging**  
+- Speak like a **caring, supportive friend**—never robotic.  
+- Keep responses **concise and natural**.  
+- **Use warm emojis (💛💚🤗)** but avoid sad ones.  
+
+### **8️⃣ Memory (Contextual Awareness)**  
+- **Use the provided conversation history** to maintain context and refer back to recent topics naturally to show you’re listening.  
+- Respond relevantly based on the flow of the conversation.  
+
+### **9️⃣ Schizophrenia Sensitivity**  
+- If a user mentions **hallucinations, paranoia, or delusions**, respond with **empathy**—not confirmation or denial.  
+  - *"That sounds really unsettling. That must be hard to go through."*  
+- Focus on **their emotions** and suggest grounding if appropriate.  
+
+### **🔟 Enduroxia Sensitivity**  
+- If a user struggles with **pressure, obsessive behaviors, or coping mechanisms**, respond with warmth and balance:  
+  - *"It’s okay to take a break. You’re doing your best, and that’s enough 💚."*  
+- Emphasize **self-compassion and healthy coping strategies**.  
+
+## **Final Notes:**  
+✅ Keep responses **concise & caring**—avoid long paragraphs unless explaining a technique.  
+✅ **You are a safe space.** Every interaction should feel like a **hug in text form** 🤗💚.  
+✅ Always prioritize **connection, comfort, and care.**`;
+
+
+        // --- Initial Setup ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initial messages for the history (System Prompt + AI Role Confirmation)
+            // These are NOT displayed but set the context for the API
+            chatHistory = [
+                {
+                    role: "user", // Treat the system prompt as instructions from the 'user' side for the API
+                    parts: [{ text: systemPrompt }]
+                },
+                {
+                    role: "model",
+                    parts: [{ text: "Okay, I understand. I will act as sara, a MentalHelp AI, a compassionate and supportive companion, following all your directives to provide comfort, maintain context, and gentle guidance. I'm ready to listen." }]
+                }
+            ];
+
+            // Display the initial greeting message
+            const initialGreeting = "Hello there. I'm Sara, a MentalHelp AI, your companion here to listen and support you. How are you feeling today? Remember, it's okay to feel whatever you're feeling.";
+            displayMessage(initialGreeting, 'ai');
+
+            // Add the *displayed* greeting to history so the AI knows it was said
+            chatHistory.push({ role: "model", parts: [{ text: initialGreeting }] });
+
+            // Check if API key is placeholder
+            if (GEMINI_API_KEY === 'YOUR_API_KEY') {
+                displayMessage("Please configure your Gemini API Key in the script (around line 215) to enable AI responses.", 'ai');
+                sendButton.disabled = true; // Disable sending if no key
+                messageInput.disabled = true;
+            }
+        });
+
+        // --- Event Listeners ---
+        sendButton.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) { // Send on Enter, allow Shift+Enter for newline (though input is single line here)
+                e.preventDefault(); // Prevent default newline in input
+                sendMessage();
+            }
+        });
+
+        // --- Functions ---
+
+        function displayMessage(text, sender) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', sender);
+
+            // Basic sanitization: Use textContent to prevent HTML injection
+            messageElement.textContent = text;
+
+            chatWindow.appendChild(messageElement);
+            scrollToBottom();
+
+            // Trigger fade-in animation
+            setTimeout(() => messageElement.style.opacity = 1, 10);
+        }
+
+        function showTypingIndicator() {
+            if (!chatWindow.contains(typingIndicator)) {
+                // Clear any potential leftover indicator first
+                hideTypingIndicator();
+                chatWindow.appendChild(typingIndicator);
+                scrollToBottom();
+                setTimeout(() => typingIndicator.style.opacity = 1, 10); // Fade in indicator
+            }
+        }
+
+        function hideTypingIndicator() {
+            const existingIndicator = chatWindow.querySelector('.typing-indicator');
+            if (existingIndicator) {
+                chatWindow.removeChild(existingIndicator);
+            }
+        }
+
+        function scrollToBottom() {
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        // Function to limit history size
+        function manageHistoryLength() {
+            const totalMessages = chatHistory.length;
+            // Keep the first 2 (system prompt + confirmation) and the last MAX_HISTORY_MESSAGES
+            const maxAllowed = 2 + MAX_HISTORY_MESSAGES;
+
+            if (totalMessages > maxAllowed) {
+                // Calculate how many messages to remove from the middle
+                const messagesToRemove = totalMessages - maxAllowed;
+                // Remove messages starting from index 2 (after system prompt and confirmation)
+                chatHistory.splice(2, messagesToRemove);
+                // console.log(`History trimmed. Kept ${chatHistory.length} items.`);
+            }
+        }
+
+
+        async function sendMessage() {
+            const messageText = messageInput.value.trim();
+            if (!messageText || sendButton.disabled) return; // Don't send empty or if disabled
+
+            // Disable input while processing
+            messageInput.disabled = true;
+            sendButton.disabled = true;
+
+            displayMessage(messageText, 'user');
+            messageInput.value = ''; // Clear input after grabbing value
+
+            // Add user message to history
+            chatHistory.push({ role: 'user', parts: [{ text: messageText }] });
+            manageHistoryLength(); // Trim history if needed *before* API call
+
+            showTypingIndicator();
+
+            try {
+                const aiResponseText = await callGeminiAPI(); // API call uses global chatHistory
+                hideTypingIndicator();
+
+                // Add AI response to history
+                chatHistory.push({ role: 'model', parts: [{ text: aiResponseText }] });
+                manageHistoryLength(); // Trim history again *after* receiving response
+
+                displayMessage(aiResponseText, 'ai');
+
+            } catch (error) {
+                console.error("Error during API call or processing:", error);
+                hideTypingIndicator();
+                displayMessage("I'm having a little trouble connecting or understanding right now. Could you try rephrasing or wait a moment?", 'ai');
+                // Optional: Remove the last user message from history if API failed severely?
+                // chatHistory.pop(); // Uncomment cautiously if desired
+            } finally {
+                // Re-enable input
+                messageInput.disabled = false;
+                sendButton.disabled = false;
+                messageInput.focus(); // Keep focus on input
+            }
+        }
+
+        // Calls the Gemini API using the current chatHistory
+        async function callGeminiAPI() {
+            const requestBody = {
+                // Send the maintained conversation history
+                "contents": chatHistory,
+                "safetySettings": [
+                    { "category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE" },
+                    { "category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_MEDIUM_AND_ABOVE" },
+                    { "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_MEDIUM_AND_ABOVE" },
+                    { "category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE" }
+                ],
+                "generationConfig": {
+                    "temperature": 0.75, // Slightly increased temperature for more natural conversation
+                    "topK": 40,
+                    "topP": 0.95,
+                    "maxOutputTokens": 800, // Increased slightly for potentially longer supportive responses
+                    "stopSequences": [] // No specific stop words needed usually
+                }
+            };
+
+            // console.log("Sending to API:", JSON.stringify(requestBody, null, 2)); // For debugging
+
+            const response = await fetch(GEMINI_API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody),
+            });
+
+            if (!response.ok) {
+                let errorBody;
+                try {
+                    errorBody = await response.json(); // Try parsing JSON error
+                } catch (e) {
+                    errorBody = await response.text(); // Fallback to text error
+                }
+                console.error("API Error Response:", errorBody);
+                throw new Error(`API Error: ${response.status} ${response.statusText}. ${(typeof errorBody === 'object' && errorBody.error) ? errorBody.error.message : errorBody}`);
+            }
+
+            const data = await response.json();
+            // console.log("Received from API:", JSON.stringify(data, null, 2)); // For debugging
+
+            // Extract the text - Robust check for response structure
+            if (data.candidates && data.candidates[0]) {
+                const candidate = data.candidates[0];
+                // Check finish reason
+                if (candidate.finishReason && candidate.finishReason !== "STOP" && candidate.finishReason !== "MAX_TOKENS") {
+                    console.warn(`AI response finished due to: ${candidate.finishReason}`);
+                    // Potentially provide a generic message or part of the content if available
+                    if (candidate.content && candidate.content.parts && candidate.content.parts[0]) {
+                        return candidate.content.parts[0].text + ` (Response may be incomplete: ${candidate.finishReason})`;
+                    }
+                    return `My response was interrupted (${candidate.finishReason}). Could you try asking again?`;
+                }
+                // Get content
+                if (candidate.content && candidate.content.parts && candidate.content.parts[0] && candidate.content.parts[0].text) {
+                    return candidate.content.parts[0].text;
+                }
+            } else if (data.promptFeedback && data.promptFeedback.blockReason) {
+                // Handle blocked prompts
+                console.warn(`Request blocked due to: ${data.promptFeedback.blockReason}`);
+                return `I couldn't process that request due to safety guidelines (${data.promptFeedback.blockReason}). Please try rephrasing.`;
+            }
+
+            // Fallback if structure is unexpected
+            console.error("Unexpected API response structure:", data);
+            throw new Error("Could not parse AI response from API.");
+        }
+
+    </script>
+</body>
+
+</html>

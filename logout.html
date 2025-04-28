@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Serene</title>
+    <link rel="stylesheet" href="login.css">
+</head>
+<body>
+    <div class="center">
+        <h1>SchizoWellness</h1>
+        <p style="text-align: center; font-size: 18px; color: #666;">Hi! How do you feel today?</p>
+        <form id="logoutForm">
+            <div class="textbox_container">
+                <textarea id="userThoughts" placeholder="Share your thoughts..." required></textarea>
+            </div>
+            <div class="button_group">
+                <input type="button" value="Clear" onclick="clearText()">
+                <input type="submit" value="Submit">
+            </div>
+        </form>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
